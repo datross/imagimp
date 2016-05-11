@@ -1,0 +1,72 @@
+			** SPECIFICATION IMAGIMP **
+			___________________________
+
+[*] Features attendues [*]
+
+	- Calques (de même dimension).
+	- Histogramme.
+	- LUT possible pour chaque calque.
+	- Historique des modifications.
+
+--------------------------------------------------------------------------------
+
+[*] Détails techniques généraux [*]
+
+	- Format pris en charge : PPM.
+	- 3 canaux RGB (+ alpha ?) de 8bits.
+
+[*] Calques [*]
+
+	- Calques d'image et calques d'effets.
+		> Image : calque normal, avec une matrice de pixels à fusionner avec
+		  le bas.
+		> Effets : ne contient aucun pixel, ça applique juste des effets sur la
+		  liste de calque. Sa couleurs est en quelque sorte la couleur que 
+		  renvoie la liste de calques en dessous.
+	- Tous de même dimension.
+	- Calque virtuel blanc (ou damier d'ailleurs) au bout de la liste calques.
+	- Pramètres d'opacité pour chaque calque (float entre 0 et 1).
+	- Modes de fusion (pour chaque calque, sauf pour les calques d'effets) : 
+	  Ajouter, Multiplier.
+	- Stockage : liste doublement chaînée.
+
+[*] Histogramme [*]
+
+	- Histogramme pour possible pour chaque calque.
+		> Image : pris séparement.
+		> Effets : ce que "renvoie" le calque.
+	- Pour chaque composante RGB et les niveaux de gris.
+
+[*] Look-Up table [*]
+
+	- Liste de LUT pour chaque calque.
+		> Image : applique la LUT sur le calque pris séparement.
+		> Effets : applique la LUT sur le bas de la liste.
+	- LUT a un tableau de réponses en nucances de gris pour chaque canaux.
+	- Une LUT peut se construire sur un petit nombres de paramètres.
+	- Types de LUT :
+		> AFFINE : paramètres : float a ; int b ; bool r, g, b, (a?).
+		> SEPIA  : ???
+
+[*] Historique [*]
+
+	- Pile des actions réalisées.
+	- La majorité des actions executées par l'utilisateur sont inversibles.
+	- [idée] Toute modif de la session se fait par l'intermédaire d'une
+	  action. Ça peut être une struct Action, avec un type dans une enum.
+
+[*] Nomenclature des fonctionnalités [*]
+
+	 IM_1 : Charger une image PPM
+	 IM_2 : Sauvegarder l'image finale en PPM
+	CAL_1 : Ajouter un calque vierge
+	CAL_2 : Naviguer dans les calques
+	CAL_3 : Modifier l'opacite d'un calque
+	CAL_4 : Modifier mode de fusion d'un calque
+	CAL_5 : Supprimer le calque courant
+	LUT_1 : Ajoutter une LUT
+	LUT_2 : Supprimer une LUT
+	IHM_1 : Changer de mode de vue
+	IHM_2 : Chargement d'un première image en ligne de commande
+	IHM_3 : Application d'effets sur le premier calque en ligne de commande
+	IHM_4 : Sortir de l'application
