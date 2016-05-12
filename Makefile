@@ -1,27 +1,27 @@
-DIR_OBJ = obj/
-DIR_INCLUDE = include/
-DIR_SRC = src/
-DIR_IMAGIMP = lib/glimagimp/
-DIR_BIN = bin/
+DIR_OBJ = obj
+DIR_INCLUDE = include
+DIR_SRC = src
+DIR_GLIMAGIMP = lib/glimagimp
+DIR_BIN = bin
 
 CC      = gcc
 CFLAGS  = -I$(DIR_INCLUDE) -I$(DIR_IMAGIMP)/include -Wall
-LDFLAGS = -L$(DIR_IMAGIMP)/lib -Wl,-rpath,$(DIR_IMAGIMP)/lib -lglimagimp -lglut -lGL -lGLU 
+LDFLAGS = -L$(DIR_GLIMAGIMP)/lib -Wl,-rpath,$(DIR_GLIMAGIMP)/lib -lglimagimp -lglut -lGL -lGLU 
 
-SRC     = $(wildcard $(DIR_SRC)*.c)
-HEADERS = $(wildcard $(DIR_INCLUDE)*.h)
-OBJ     = $(SRC:$(DIR_SRC)%.c=$(DIR_OBJ)%.o)
+SRC     = $(wildcard $(DIR_SRC)/*.c)
+HEADERS = $(wildcard $(DIR_INCLUDE)/*.h)
+OBJ     = $(SRC:$(DIR_SRC)/%.c=$(DIR_OBJ)/%.o)
 
 all: libglimagimp $(OBJ)
 	$(CC) $(filter-out $<, $^)  -o $(DIR_BIN)/imagimp $(LDFLAGS) 
 
 main.o: $(HEADERS)
 
-$(DIR_OBJ)%.o : $(DIR_SRC)%.c
+$(DIR_OBJ)/%.o : $(DIR_SRC)/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 libglimagimp:
-	cd lib/glimagimp/ && $(MAKE) 
+	cd $(DIR_GLIMAGIMP) && $(MAKE) 
 
 .PHONY: clean
 

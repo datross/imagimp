@@ -18,7 +18,7 @@ CC = gcc
 # Pour la librairie statique
 AR = ar rcs
 # OBJET
-DIR_OBJ = obj/
+DIR_OBJ = obj
 ## OBJ_MATH : liste des objets de la bibliothèque
 OBJECTS = $(DIR_OBJ)/interface.o $(DIR_OBJ)/outils.o
 
