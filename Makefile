@@ -1,22 +1,31 @@
-CC      = gcc
-CFLAGS  = -Iinclude/ -I../lib_graphique/include -Wall
-LDFLAGS = -L../lib_graphique/lib -Wl,-rpath,../lib_graphique/lib -lglimagimp -lglut -lGL -lGLU 
-SRC     = $(wildcard src/*.c)
-HEADERS = $(wildcard include/*.h)
-OBJ     = $(SRC:src/%.c=lib/%.o)
+DIR_OBJ = obj/
+DIR_INCLUDE = include/
+DIR_SRC = src/
+DIR_IMAGIMP = lib/glimagimp/
+DIR_BIN = bin/
 
-all: $(OBJ)
-	@#echo "OBJ : $(OBJ)"
-	$(CC) $^ -o bin/imagimp $(LDFLAGS) 
+CC      = gcc
+CFLAGS  = -I$(DIR_INCLUDE) -I$(DIR_IMAGIMP)/include -Wall
+LDFLAGS = -L$(DIR_IMAGIMP)/lib -Wl,-rpath,$(DIR_IMAGIMP)/lib -lglimagimp -lglut -lGL -lGLU 
+
+SRC     = $(wildcard $(DIR_SRC)*.c)
+HEADERS = $(wildcard $(DIR_INCLUDE)*.h)
+OBJ     = $(SRC:$(DIR_SRC)%.c=$(DIR_OBJ)%.o)
+
+all: libglimagimp $(OBJ)
+	$(CC) $(filter-out $<, $^)  -o $(DIR_BIN)/imagimp $(LDFLAGS) 
 
 main.o: $(HEADERS)
 
-lib/%.o : src/%.c
+$(DIR_OBJ)%.o : $(DIR_SRC)%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
+
+libglimagimp:
+	cd lib/glimagimp/ && $(MAKE) 
 
 .PHONY: clean
 
 clean:
-	rm -f lib/*.o
+	rm -f $(DIR_OBJ)*.o
 
 re : clean all 
