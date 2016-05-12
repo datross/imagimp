@@ -1,3 +1,2 @@
-lib/glimagimp/obj/*
-bin/*
-obj/*
+*.so
+*.o
