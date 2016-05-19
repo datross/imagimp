@@ -5,7 +5,7 @@ DIR_GLIMAGIMP = lib/glimagimp
 DIR_BIN = bin
 
 CC      = gcc
-CFLAGS  = -I$(DIR_INCLUDE) -I$(DIR_IMAGIMP)/include -Wall
+CFLAGS  = -I$(DIR_INCLUDE) -I$(DIR_GLIMAGIMP)/include -Wall
 LDFLAGS = -L$(DIR_GLIMAGIMP)/lib -Wl,-rpath,$(DIR_GLIMAGIMP)/lib -lglimagimp -lglut -lGL -lGLU 
 
 SRC     = $(wildcard $(DIR_SRC)/*.c)
@@ -21,7 +21,7 @@ $(DIR_OBJ)/%.o : $(DIR_SRC)/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 libglimagimp:
-	cd $(DIR_GLIMAGIMP) && $(MAKE) 
+	cd $(DIR_GLIMAGIMP) && $(MAKE) && cd ../..
 
 .PHONY: clean
 

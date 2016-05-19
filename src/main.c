@@ -20,8 +20,8 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "outils.h"
-#include "interface.h"
+#include <outils.h>
+#include <interface.h>
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// Tableau representant une image...
