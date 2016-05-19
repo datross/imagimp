@@ -21,10 +21,10 @@
 		> Image : calque normal, avec une matrice de pixels à fusionner avec
 		  le bas.
 		> Effets : ne contient aucun pixel, ça applique juste des effets sur la
-		  liste de calque. Sa couleurs est en quelque sorte la couleur que 
+		  liste de calque. Sa couleur est en quelque sorte la couleur que 
 		  renvoie la liste de calques en dessous.
 	- Tous de même dimension.
-	- Calque virtuel blanc (ou damier d'ailleurs) au bout de la liste calques.
+	- Calque virtuel blanc (ou damier d'ailleurs) au bout de la liste des calques.
 	- Pramètres d'opacité pour chaque calque (float entre 0 et 1).
 	- Modes de fusion (pour chaque calque, sauf pour les calques d'effets) : 
 	  Ajouter, Multiplier.
@@ -64,7 +64,7 @@
 	CAL_3 : Modifier l'opacite d'un calque
 	CAL_4 : Modifier mode de fusion d'un calque
 	CAL_5 : Supprimer le calque courant
-	LUT_1 : Ajoutter une LUT
+	LUT_1 : Ajouter une LUT
 	LUT_2 : Supprimer une LUT
 	IHM_1 : Changer de mode de vue
 	IHM_2 : Chargement d'un première image en ligne de commande
