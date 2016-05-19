@@ -6,8 +6,8 @@
 #include <layer.h>
 
 typedef struct Composition {
-	unsigned w, h;
-	Layer * layers;
+	unsigned w, h; /* identique pour tous les calques */
+	Layer * layers; /* liste doublement chaînée */
 } Composition;
 
 #endif /* CORE_H */

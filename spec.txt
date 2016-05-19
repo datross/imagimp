@@ -32,7 +32,7 @@
 
 [*] Histogramme [*]
 
-	- Histogramme pour possible pour chaque calque.
+	- Histogramme possible pour chaque calque.
 		> Image : pris séparement.
 		> Effets : ce que "renvoie" le calque.
 	- Pour chaque composante RGB et les niveaux de gris.
@@ -42,7 +42,7 @@
 	- Liste de LUT pour chaque calque.
 		> Image : applique la LUT sur le calque pris séparement.
 		> Effets : applique la LUT sur le bas de la liste.
-	- LUT a un tableau de réponses en nucances de gris pour chaque canaux.
+	- LUT a un tableau de réponses en nuances de gris pour chaque canal.
 	- Une LUT peut se construire sur un petit nombres de paramètres.
 	- Types de LUT :
 		> AFFINE : paramètres : float a ; int b ; bool r, g, b, (a?).
