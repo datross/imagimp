@@ -129,7 +129,7 @@ void kbdFunc_GLIMAGIMP(unsigned char c, int x, int y) {
 void reshapeFunc(int width,int height) {
 	// ON IGNORE LE RESIZE
 	glutReshapeWindow(width_ecran,height_ecran);
-	printf("Nouvelle taille %d %d\n",width_ecran,height_ecran);
+	//printf("Nouvelle taille %d %d\n",width_ecran,height_ecran);
 	glViewport( 0, 0, (GLint)width_ecran, (GLint)height_ecran );
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();

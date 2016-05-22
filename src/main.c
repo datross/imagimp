@@ -1,41 +1,22 @@
-/***************************************************************************
- *   Copyright (C) 2008 by Venceslas BIRI                                  *
- *   biri@univ-mlv.fr                                                      *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+/* main.c */
 
 #include <string.h>
 #include <stdio.h>
-#include <outils.h>
-#include <interface.h>
+#include <ihm.h>
 
-/// ///////////////////////////////////////////////////////////////////////////
-/// Tableau representant une image...
+
+/* Tableau representant une image */
 unsigned char* image_base = NULL;
 unsigned char* image_switch = NULL;
 int switch_image = 0;
-
+unsigned w_img, h_img;
 ////////////////////////////      MAIN      ///////////////////////////
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// fonction associée aux interruptions clavier
 /// - c : caractère saisi
 /// - x,y : coordonnée du curseur dans la fenetre
-void kbdFunc(unsigned char c, int x, int y) {
+/* void kbdFunc(unsigned char c, int x, int y) {
 	char saisie[100] = {'\0'};
 	printf("Touche tapee %c (coord souris %d/%d)\n",c,x,y);
 	switch(c) {
@@ -62,13 +43,13 @@ void kbdFunc(unsigned char c, int x, int y) {
 		default :
 			printf("Touche non fonctionnelle\n");
 	}
-}
+}*/
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// fonction associée aux interruptions clavier speciales
 /// - c : caractère saisi
 /// - x,y : coordonnée du curseur dans la fenêtre
-void kbdSpFunc(int c, int x, int y)
+/*void kbdSpFunc(int c, int x, int y)
 {
 	printf("Touche speciale utilisee %d (coord souris %d/%d)\n",c,x,y);
 	switch(c) {
@@ -78,12 +59,12 @@ void kbdSpFunc(int c, int x, int y)
 		default :
 			printf("Touche speciale non fonctionnelle\n");
 	}
-}
+}*/
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// fonction associée aux evenements souris
 /// - x,y : coordonnée de la souris dans la fenêtre
-void clickMouse(int button,int state,int x,int y) {
+/*void clickMouse(int button,int state,int x,int y) {
 	if (button == GLUT_LEFT_BUTTON) {
 		printf("Button gauche ");
 	}
@@ -100,19 +81,22 @@ void clickMouse(int button,int state,int x,int y) {
 		printf("relache\n");
 	}
 	printf("Coordonnees du point clique %d %d\n",x,y);
-}
+}*/
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// fonction de personnalisation du rendu
+
+Button but;
+
 void mondessin() {
-	writeString(0,0,"Ecriture ecran");
+/*	writeString(0,0,"Ecriture ecran");
 	fixeCouleur(1.0,0.0,0.0);
 	drawLigne(0.0,0.0,1.0,1.0);
 	fixeCouleur(1.0,1.0,0.0);
 	drawCarre(0.5,0.5,0.7,0.7);
 	fixeCouleur(1.0,0.0,0.0);
 	drawCarreVide(0.85,0.2,0.95,0.25);
-	writeString(0.86/**800+1*/,0.21/**600+1*/,"TEST");
+	writeString(0.86,0.21,"TEST");
 	drawDisque(0.1,0.5,0.1);
 	drawDisque(0.3,0.5,0.1);
 	drawDisque(0.5,0.5,0.1);
@@ -120,7 +104,12 @@ void mondessin() {
 	drawDisque(0.9,0.5,0.1);
 	fixeCouleur(0.0,0.0,1.0);
 	drawCercle(0.7,0.5,0.02);
-	fixeCouleur(1.0,1.0,1.0);
+	fixeCouleur(1.0,1.0,1.0);*/
+	for(unsigned i = 0; i < w_img * h_img * 3; ++i) {
+    	++image_base[i];
+	}
+	actualiseImage(image_base);
+
 }
 
 unsigned char* createImage(unsigned int* w_im,unsigned int* h_im) {
@@ -146,7 +135,7 @@ unsigned char* createImage(unsigned int* w_im,unsigned int* h_im) {
 	return tabRVB;
 }
 
-unsigned char* createSwitch(unsigned int w_im,unsigned int h_im) {
+/*unsigned char* createSwitch(unsigned int w_im,unsigned int h_im) {
 	unsigned int i,j,k;
 
 	unsigned char* tabRVB2 =
@@ -171,16 +160,16 @@ void quitte(void) {
 	if (image_base != NULL) {
 		free(image_base);
 	}
-}
+}*/
 
 int main(int argc, char** argv) {
-	int i;
+	/*int i;*/
 	unsigned int w,h;
 	// Initialize data;
-	w = 800;
-	h = 600;
+	w = w_img = 800;
+	h = h_img = 600;
 	image_base = NULL;
-	// Parse the command line arguments
+	/*// Parse the command line arguments
 	printf("Argc = %d\n",argc);
 	for (i=1;i<argc;i++) {
 		if (strcmp(argv[i],"-h") == 0) {
@@ -189,15 +178,18 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	// Loading data
-	image_base = createImage(&w,&h);
-	image_switch = createSwitch(w,h);
+
+	// Loading data*/
+	//image_base = createImage(&w,&h);
+/*	image_switch = createSwitch(w,h);*/
+
+    Ihm_init();
 
 	// Loading IHM
-	fixeFonctionClicSouris(clickMouse);
-	fixeFonctionClavier(kbdFunc);
-	fixeFonctionClavierSpecial(kbdSpFunc);
-	fixeFonctionDessin(mondessin);
+	fixeFonctionClicSouris(Callback_mouse);
+	fixeFonctionClavier(Callback_keyboard);
+	fixeFonctionClavierSpecial(Callback_sp_keyboard);
+	fixeFonctionDessin(Callback_draw);
 
 	initGLIMAGIMP_IHM(w,h,image_base,w+200,h);
 	//Cette partie du code ne peut etre atteinte

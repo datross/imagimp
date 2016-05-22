@@ -21,10 +21,9 @@ typedef enum Layer_type {
 typedef struct Layer {
 	unsigned id; /* unique parmi tous les calques */
 	Layer_type type;
-	uint8_t ** pixels[4]; /* il y a toujours 4 canaux de 8bits de profondeur.
-                             NULL pour un calque d'effet. */
+	uint8_t * pixels; /* NULL pour un calque d'effet. */
 	float opacity; /* entre 0 et 1 */
-	bool visible; 
+	bool active; 
 	Lut	* luts; /* liste doublement chaînée des LUTs */
 	
 	struct Layer *next, *prev;

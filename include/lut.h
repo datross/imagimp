@@ -4,8 +4,10 @@
 #define LUT_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct Lut {
+    bool active;
 	uint8_t r[256],
 			g[256],
 			b[256],

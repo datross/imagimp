@@ -5,7 +5,7 @@ DIR_GLIMAGIMP = lib/glimagimp
 DIR_BIN = bin
 
 CC      = gcc
-CFLAGS  = -I$(DIR_INCLUDE) -I$(DIR_GLIMAGIMP)/include -Wall
+CFLAGS  = -I$(DIR_INCLUDE) -I$(DIR_GLIMAGIMP)/include -Wall -std=c99
 LDFLAGS = -L$(DIR_GLIMAGIMP)/lib -Wl,-rpath,$(DIR_GLIMAGIMP)/lib -lglimagimp -lglut -lGL -lGLU 
 
 SRC     = $(wildcard $(DIR_SRC)/*.c)
@@ -17,7 +17,7 @@ all: libglimagimp $(OBJ)
 
 main.o: $(HEADERS)
 
-$(DIR_OBJ)/%.o : $(DIR_SRC)/%.c
+$(DIR_OBJ)/%.o : $(DIR_SRC)/%.c $(HEADERS)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 libglimagimp:
@@ -26,6 +26,6 @@ libglimagimp:
 .PHONY: clean
 
 clean:
-	rm -f $(DIR_OBJ)*.o
+	rm -f $(DIR_OBJ)/*.o
 
 re : clean all 
