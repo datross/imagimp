@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
 /*	image_switch = createSwitch(w,h);*/
 
     Ihm_init();
-
+    atexit(&Ihm_deinit);
 	// Loading IHM
 	fixeFonctionClicSouris(Callback_mouse);
 	fixeFonctionClavier(Callback_keyboard);

@@ -6,7 +6,7 @@
 #include <core.h>
 
 #define ACTION_MAX_INT_PARAMETERS 5
-#define ACTION_MAX_FLAOT_PARAMETERS 5
+#define ACTION_MAX_FLOAT_PARAMETERS 5
 #define ACTION_MAX_STRING_PARAMETERS 5
 #define ACTION_MAX_STRING_PARAMETER_LENGTH 100
 
@@ -29,12 +29,30 @@ typedef enum Action_type {
 
 typedef struct Action {
     Action_type type;
-    bool undoable;
+    bool undoable; // pas utile pour le moment.
+    Composition * comp;
     
     /* paramètres de l'action */
     int   param_int[ACTION_MAX_INT_PARAMETERS];
-    float param_float[ACTION_MAX_FLAOT_PARAMETERS];
+    float param_float[ACTION_MAX_FLOAT_PARAMETERS];
     char  param_string[ACTION_MAX_STRING_PARAMETERS][ACTION_MAX_STRING_PARAMETER_LENGTH];
-}
+} Action;
+
+typedef struct History {
+    /* Pile (tableau) d'actions */
+    Action *done,   /* Actions faites */
+           *undone; /* Actions défaites */
+    unsigned s_done, s_undone;
+} History;
+
+/* Libère la mémoire de toutes les actions */
+void History_clear(History * history);
+
+/* Execute l'action, et gère l'historique */
+void History_do(History * history, Action action);
+/* Ctrl-z */
+void History_undo(History * history);
+/* Ctrl-y */
+void History_redo(History * history);
 
 #endif /* ACTION_H */

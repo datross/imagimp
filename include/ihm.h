@@ -9,23 +9,24 @@
 #include <outils.h>
 #include <widget.h>
 #include <globals.h>
+#include <tinyfiledialogs.h>
+#include <action.h>
 
 typedef struct Session {
-    //const Composition * comp; /* lecture seule des données */
-    // On verra ce qu'on met ici
-    // pile de l'historique
-    
+    Composition comp;
+    History history;
     /* Widgets graphiques */
     Button b_open, b_save, b_export_comp, b_export_hist, b_open_layer,
             b_norm_layer, b_effect_layer, b_del_layer, b_aff_lut, b_sep_lut,
             b_del_lut, b_l_up, b_l_down, b_l_mv_up, b_l_mv_down, b_lt_up,
             b_lt_down, b_lt_mv_up, b_lt_mv_down;
-    Checkbox c_mode, c_blend_norm, c_blend_repl, c_blend_add, c_blend_prod,
+    Checkbox c_blend_norm, c_blend_repl, c_blend_add, c_blend_prod,
                 c_lt_r, c_lt_g, c_lt_b, c_lt_alpha;
     Slider s_opacity, s_l_r, s_l_g, s_l_b, s_lt_a, s_lt_b;
 } Session;
 
 void Ihm_init();
+void Ihm_deinit();
 
 /* Fonctions de callback de glimagimp. */
 void Callback_keyboard(unsigned char c, int x, int y);

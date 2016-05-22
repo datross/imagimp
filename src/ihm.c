@@ -1,8 +1,11 @@
 /* ihm.c */
 
 #include <ihm.h>
+#include <string.h>
 
 void Ihm_init() {
+    
+    /* Widgets graphiques */
     session.b_open = Button_create(X_CONTROLS + 2, 5, 95, 18, "Open");
     session.b_save = Button_create(X_CONTROLS + 102, 5, 95, 18, "Save");
     session.b_export_comp = Button_create(X_CONTROLS + 2, 28, 95, 18, "Export comp");
@@ -50,6 +53,15 @@ void Ihm_init() {
     session.b_lt_mv_up = Button_create(X_CONTROLS + 2, 360, 20, 13, "up");
     session.b_lt_mv_down = Button_create(X_CONTROLS + 2, 345+60-26-3, 20, 13, "dn");
     session.b_lt_down = Button_create(X_CONTROLS + 2, 345+60-13, 20, 13, "v");
+    
+    /* init de l'historique */
+    memset(&(session.history), 0, sizeof(History));
+}
+
+void Ihm_deinit() {
+    History_clear(&(session.history));
+    Composition_deinit(&(session.comp));
+    printf("Exiting imagimp.\n");
 }
 
 void Callback_keyboard(unsigned char c, int x, int y) {
@@ -67,7 +79,7 @@ void Callback_mouse(int button, int state, int x, int y) {
         
     /* Test de tous les widgets */
     if(Button_update(&(session.b_open), x, y, click)) {
-        
+
     } else if(Button_update(&(session.b_save), x, y, click)) {
     
     } else if(Button_update(&(session.b_export_comp), x, y, click)) {
@@ -75,7 +87,15 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Button_update(&(session.b_export_hist), x, y, click)) {
     
     } else if(Button_update(&(session.b_open_layer), x, y, click)) {
-    
+        Action action;
+        action.type = ADD_LAYER;
+        action.param_int[0] = 0; /* calque depuis fichier */
+        action.comp = &(session.comp);
+        char const * name = tinyfd_openFileDialog("Import image as layer", NULL, 0, NULL, NULL, 0);
+        if(name) {
+            strcpy(&(action.param_string[0][0]), name);
+            History_do(&(session.history), action);
+        }
     } else if(Button_update(&(session.b_norm_layer), x, y, click)) {
     
     } else if(Button_update(&(session.b_effect_layer), x, y, click)) {
