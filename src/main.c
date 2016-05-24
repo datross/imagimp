@@ -86,10 +86,10 @@ unsigned w_img, h_img;
 /// ///////////////////////////////////////////////////////////////////////////
 /// fonction de personnalisation du rendu
 
-Button but;
+/*Button but;
 
 void mondessin() {
-/*	writeString(0,0,"Ecriture ecran");
+	writeString(0,0,"Ecriture ecran");
 	fixeCouleur(1.0,0.0,0.0);
 	drawLigne(0.0,0.0,1.0,1.0);
 	fixeCouleur(1.0,1.0,0.0);
@@ -104,15 +104,15 @@ void mondessin() {
 	drawDisque(0.9,0.5,0.1);
 	fixeCouleur(0.0,0.0,1.0);
 	drawCercle(0.7,0.5,0.02);
-	fixeCouleur(1.0,1.0,1.0);*/
+	fixeCouleur(1.0,1.0,1.0);
 	for(unsigned i = 0; i < w_img * h_img * 3; ++i) {
     	++image_base[i];
 	}
 	actualiseImage(image_base);
 
-}
+}*/
 
-unsigned char* createImage(unsigned int* w_im,unsigned int* h_im) {
+/*unsigned char* createImage(unsigned int* w_im,unsigned int* h_im) {
 	unsigned int i,j,k;
 	*w_im = 800;
 	*h_im = 600;
@@ -133,7 +133,7 @@ unsigned char* createImage(unsigned int* w_im,unsigned int* h_im) {
 		}
 	}
 	return tabRVB;
-}
+}*/
 
 /*unsigned char* createSwitch(unsigned int w_im,unsigned int h_im) {
 	unsigned int i,j,k;
@@ -163,12 +163,6 @@ void quitte(void) {
 }*/
 
 int main(int argc, char** argv) {
-	/*int i;*/
-	unsigned int w,h;
-	// Initialize data;
-	w = w_img = 800;
-	h = h_img = 600;
-	image_base = NULL;
 	/*// Parse the command line arguments
 	printf("Argc = %d\n",argc);
 	for (i=1;i<argc;i++) {
@@ -191,7 +185,7 @@ int main(int argc, char** argv) {
 	fixeFonctionClavierSpecial(Callback_sp_keyboard);
 	fixeFonctionDessin(Callback_draw);
 
-	initGLIMAGIMP_IHM(w,h,image_base,w+200,h);
+	initGLIMAGIMP_IHM(W_CANVAS, H_CANVAS, NULL,  W_IHM, H_IHM);
 	//Cette partie du code ne peut etre atteinte
 	printf("Cette partie du code ne peut etre atteinte\n");
 

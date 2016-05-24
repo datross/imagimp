@@ -85,10 +85,10 @@ void Blend_effect(const uint8_t * above, uint8_t * below, float opacity, Lut * l
 }
 
 void Blend_normal(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
-    below[0] = opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[0]] + (1. - opacity*lut->v[4 * above[3] + 3]) * below[0];
-    below[1] = opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[1] + 1] + (1. - opacity*lut->v[4 * above[3] + 3]) * below[1];
-    below[2] = opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[2] + 2] + (1. - opacity*lut->v[4 * above[3] + 3]) * below[2];
-    below[3] = opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[3] + 3] + (1. - opacity*lut->v[4 * above[3] + 3]) * below[3];
+    below[0] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[0]] + (1. - (opacity *lut->v[4 * above[3] + 3]/255.)) * below[0];
+    below[1] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[1] + 1] + (1. - (opacity*lut->v[4 * above[3] + 3]/255.)) * below[1];
+    below[2] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[2] + 2] + (1. - (opacity*lut->v[4 * above[3] + 3]/255.)) * below[2];
+    below[3] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[3] + 3] + (1. - (opacity*lut->v[4 * above[3] + 3]/255.)) * below[3];
 }
 
 void Blend_replace(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
@@ -133,8 +133,8 @@ void Layer_blend(const Layer * layer, uint8_t * below, unsigned w, unsigned h) {
                                                     layer->id); exit(EXIT_FAILURE);
         }
     }
-    for(unsigned i = 0; i < w*h; i+=4) {
-        (*blend)(layer->pixels + i, below + i, layer->opacity, &lut);
+    for(unsigned i = 0; i < w*h; ++i) {
+        (*blend)(layer->pixels + 4 * i, below + 4 * i, layer->opacity, &lut);
     }
 }
 

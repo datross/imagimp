@@ -23,10 +23,15 @@ typedef struct Session {
     Checkbox c_blend_norm, c_blend_repl, c_blend_add, c_blend_prod,
                 c_lt_r, c_lt_g, c_lt_b, c_lt_alpha;
     Slider s_opacity, s_l_r, s_l_g, s_l_b, s_lt_a, s_lt_b;
+    
+    uint8_t * canvas; /* Image affichée dans la fenêtre (RGB).
+                       * Taille : W_CANVAS x H_CANVAS */
 } Session;
 
 void Ihm_init();
 void Ihm_deinit();
+
+void Ihm_update_canvas();
 
 /* Fonctions de callback de glimagimp. */
 void Callback_keyboard(unsigned char c, int x, int y);

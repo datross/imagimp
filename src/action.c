@@ -27,7 +27,7 @@ void Action_execute(Action action) {
             Composition_add_layer_from_file(action.comp, &(action.param_string[0][0]));
             break;
         default: break;
-    }
+    }    
 }
 
 /* Execute le "contraire" de l'action */

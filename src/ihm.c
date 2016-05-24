@@ -2,6 +2,7 @@
 
 #include <ihm.h>
 #include <string.h>
+#include <stdio.h>
 
 void Ihm_init() {
     
@@ -56,12 +57,24 @@ void Ihm_init() {
     
     /* init de l'historique */
     memset(&(session.history), 0, sizeof(History));
+    
+    /* init du canvas */
+    session.canvas = malloc(W_CANVAS * H_CANVAS * 3 * sizeof(uint8_t));
+    if(!session.canvas) {
+        fprintf(stderr, "Erreur allocation image canvas.\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void Ihm_deinit() {
     History_clear(&(session.history));
     Composition_deinit(&(session.comp));
+    free(session.canvas);
     printf("Exiting imagimp.\n");
+}
+
+void Ihm_update_canvas() {
+    Composition_canvas_img(&(session.comp), session.canvas, W_CANVAS, H_CANVAS);
 }
 
 void Callback_keyboard(unsigned char c, int x, int y) {
@@ -153,6 +166,8 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Checkbox_update(&(session.c_lt_alpha), x, y, click)) {
         
     }
+    
+    Ihm_update_canvas();
 }
 void Callback_draw() {
     Button_draw(&(session.b_open));
@@ -228,4 +243,7 @@ void Callback_draw() {
     /* [PROVISOIRE] Box histo LUT */
     fixeCouleur(0.6,0.4,0.4);
     drawCarre(X_F(X_CONTROLS + 2), Y_F(H_IHM - 2), X_F(W_IHM - 2), Y_F(468+3));
+    
+    /* Image du canvas */
+    actualiseImage(session.canvas);
 }
