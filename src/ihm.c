@@ -166,8 +166,8 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Checkbox_update(&(session.c_lt_alpha), x, y, click)) {
         
     }
-    
-    Ihm_update_canvas();
+    if(click)
+        Ihm_update_canvas();
 }
 void Callback_draw() {
     Button_draw(&(session.b_open));

@@ -8,8 +8,8 @@
 #define X_CONTROLS 800
 
 /* de type 'unsigned' parce je n'arrive pas à 'expand' la macro dans des #define. */
-static unsigned W_CANVAS = X_CONTROLS;
-static unsigned H_CANVAS = H_IHM;
+static const unsigned W_CANVAS = X_CONTROLS;
+static const unsigned H_CANVAS = H_IHM;
 
 #define X_F(x) ((float)(x)/W_IHM)
 #define Y_F(y) (1. - (float)(y)/H_IHM)
