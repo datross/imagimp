@@ -36,6 +36,11 @@ void Ihm_init() {
     session.b_l_mv_down = Button_create(X_CONTROLS + 2, 184+80-32-3, 20, 16, "dn");
     session.b_l_down = Button_create(X_CONTROLS + 2, 184+80-16, 20, 16, "v");
     
+    for(unsigned i = 0; i < 4; ++i) {
+        session.c_layer_active[i] = Checkbox_create(X_CONTROLS + 2 + 20 + 7, 188 + i * 20, false);
+        Checkbox_color(session.c_layer_active + i, 0, 1, 1);
+    }
+    
     session.b_del_lut = Button_create(X_CONTROLS + 102, 184+80+5, 95, 18, "Delete LUT");
     session.b_aff_lut = Button_create(X_CONTROLS + 2, 184+80+5+18+3, 95, 18, "LUT (ax+b)");
     session.b_sep_lut = Button_create(X_CONTROLS + 2, 184+80+5, 95, 18, "LUT sepia");
@@ -55,6 +60,11 @@ void Ihm_init() {
     session.b_lt_mv_down = Button_create(X_CONTROLS + 2, 345+60-26-3, 20, 13, "dn");
     session.b_lt_down = Button_create(X_CONTROLS + 2, 345+60-13, 20, 13, "v");
     
+    for(unsigned i = 0; i < 3; ++i) {
+        session.c_lut_active[i] = Checkbox_create(X_CONTROLS + 2 + 20 + 7, 349 + i * 20, false);
+        Checkbox_color(session.c_lut_active + i, 1, 0, 1);
+    }
+    
     /* init de l'historique */
     memset(&(session.history), 0, sizeof(History));
     
@@ -64,17 +74,140 @@ void Ihm_init() {
         fprintf(stderr, "Erreur allocation image canvas.\n");
         exit(EXIT_FAILURE);
     }
+    
+    session.selected_layer = -1;
+    session.selected_lut = -1;
+    session.first_layer = 0;
+    session.first_lut = 0;
 }
 
 void Ihm_deinit() {
     History_clear(&(session.history));
     Composition_deinit(&(session.comp));
     free(session.canvas);
+    session.selected_layer = -1;
+    session.selected_lut = -1;
+    session.first_layer = 0;
+    session.first_lut = 0;
     printf("Exiting imagimp.\n");
 }
 
 void Ihm_update_canvas() {
     Composition_canvas_img(&(session.comp), session.canvas, W_CANVAS, H_CANVAS);
+}
+
+/* FONCTIONS UTILITAIRES LOCALES */
+
+unsigned Get_nb_layers() {
+    unsigned n = 0;
+    for(Layer * l = session.comp.layers; l; l = l->next)
+        ++n;
+    return n;
+}
+unsigned Get_nb_luts() {
+    unsigned n = 0;
+    Layer * l = Composition_get_layer(&(session.comp), session.selected_layer);
+    if(!l) return n;
+    for(Lut * lut = l->luts; lut; lut = lut->next)
+        ++n;
+    return n;
+}
+void Update_layer_list(unsigned x, unsigned y, bool click) {
+    for(unsigned i = 0; i < min(4, Get_nb_layers() - session.first_layer); ++i) {
+        if(Checkbox_update(session.c_layer_active + i, x, y, click)) {
+            Action action;
+            action.type = CHANGE_LAYER_VISIBILITY;
+            action.undoable = false;
+            action.comp = &(session.comp);
+            action.param_int[0] = i + session.first_layer;
+            action.param_int[1] = session.c_layer_active[i].value;
+            History_do(&(session.history), action);
+            break;
+        }
+    }
+}
+
+void Update_lut_list(unsigned x, unsigned y, bool click) {
+    for(unsigned i = 0; i < min(3, Get_nb_luts() - session.first_lut); ++i) {
+        if(Checkbox_update(session.c_lut_active + i, x, y, click)) {
+            Action action;
+            action.type = CHANGE_LUT_VISIBILITY;
+            action.undoable = false;
+            action.comp = &(session.comp);
+            action.param_int[0] = Composition_get_layer(&(session.comp), session.selected_layer)->id;
+            action.param_int[1] = i + session.first_lut; /* numero, et pas id */
+            action.param_int[2] = session.c_lut_active[i].value;
+            History_do(&(session.history), action);
+            break;
+        }
+    }
+}
+
+void Draw_layer_list() {
+    /* Dessin de la selection si il y en a une */
+    if(session.selected_layer >= 0) {
+        fixeCouleur(0.4,0,0);
+        unsigned tmp_num_layer = session.selected_layer - session.first_layer;
+        drawCarre(X_F(X_CONTROLS + 23), Y_F(184 + (tmp_num_layer + 1) * 20), X_F(W_IHM - 2), Y_F(184 + tmp_num_layer * 20));
+    }
+    
+    /* Dessin des checkbox et étiquettes */
+    char str[100];
+    for(unsigned i = 0; i < min(4, Get_nb_layers() - session.first_layer); ++i) {
+        Layer * l = Composition_get_layer(&(session.comp), session.first_layer + i);
+        session.c_layer_active[i].value = l->active;
+        Checkbox_draw(session.c_layer_active + i);
+        snprintf(str, 100, "%u", l->id);
+        fixeCouleur(1,1,1);
+        writeString(X_F(X_CONTROLS + 22 + CHECKBOX_SIZE + 10), Y_F(184 + (i+1) * 20 - 5), str);
+    }
+}
+
+void Draw_lut_list() {
+    /* Dessin de la selection si il y en a une */
+    if(session.selected_lut >= 0) {
+        fixeCouleur(0.4,0,0);
+        unsigned tmp_num_lut = session.selected_lut - session.first_lut;
+        drawCarre(X_F(X_CONTROLS + 23), Y_F(184 + (tmp_num_lut + 1) * 20), X_F(W_IHM - 2), Y_F(184 + tmp_num_lut * 20));
+    }
+    
+    /* Dessin des checkbox et étiquettes */
+    char str[100];
+    for(unsigned i = 0; i < min(4, Get_nb_luts() - session.first_lut); ++i) {
+        Lut * l = Composition_get_lut(Composition_get_layer(&(session.comp), session.selected_layer), session.first_lut + i);
+        session.c_lut_active[i].value = l->active;
+        Checkbox_draw(session.c_lut_active + i);
+        snprintf(str, 100, "%u", l->id);
+        fixeCouleur(1,1,1);
+        writeString(X_F(X_CONTROLS + 22 + CHECKBOX_SIZE + 10), Y_F(184 + (i+1) * 20 - 5), str);
+    }
+}
+
+void Draw_layer_histogram() {
+#define H session.comp.histogram
+    unsigned x = X_CONTROLS + 2,
+             y = 469,
+             w = W_IHM - X_CONTROLS - 4,
+             h = H_IHM - 2 - 469;
+    float scale_h = (float)h / H.max;
+    for(unsigned i = 1; i < w; ++i) {
+        unsigned k = 255. * (float)(i-1) / w;
+        unsigned j = 255. * (float)i / w;
+        
+        fixeCouleur(1,0,0);
+        drawLigne(X_F(x + i-1), Y_F(y + h - scale_h * H.r[k]),
+                        X_F(x + i), Y_F(y + h - scale_h * H.r[j]));
+        fixeCouleur(0,1,0);
+        drawLigne(X_F(x + i-1), Y_F(y + h - scale_h * H.g[k]),
+                        X_F(x + i), Y_F(y + h - scale_h * H.g[j]));
+        fixeCouleur(0,0,1);
+        drawLigne(X_F(x + i-1), Y_F(y + h - scale_h * H.b[k]),
+                        X_F(x + i), Y_F(y + h - scale_h * H.b[j]));
+        fixeCouleur(1,1,1);
+        drawLigne(X_F(x + i-1), Y_F(y + h - scale_h * H.lum[k]),
+                        X_F(x + i), Y_F(y + h - scale_h * H.lum[j]));
+    }
+#undef H
 }
 
 void Callback_keyboard(unsigned char c, int x, int y) {
@@ -116,13 +249,18 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Button_update(&(session.b_del_layer), x, y, click)) {
     
     } else if(Button_update(&(session.b_l_up), x, y, click)) {
-    
+        session.selected_layer = max(session.selected_layer - 1, 0);
+        if(session.first_layer > session.selected_layer)
+            session.first_layer = session.selected_layer;
     } else if(Button_update(&(session.b_l_mv_up), x, y, click)) {
     
     } else if(Button_update(&(session.b_l_mv_down), x, y, click)) {
     
     } else if(Button_update(&(session.b_l_down), x, y, click)) {
-    
+        session.selected_layer = min(session.selected_layer + 1,
+                                                        Get_nb_layers() - 1);
+        if(session.selected_layer > session.first_layer + 3)
+            session.first_layer = session.selected_layer - 3;
     } else if(Button_update(&(session.b_del_lut), x, y, click)) {
     
     } else if(Button_update(&(session.b_aff_lut), x, y, click)) {
@@ -166,6 +304,10 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Checkbox_update(&(session.c_lt_alpha), x, y, click)) {
         
     }
+    Update_layer_list(x, y, click);
+    Update_lut_list(x, y, click);
+    session.comp.histogram_id = Composition_get_layer(&(session.comp), session.selected_layer) ? 
+                        Composition_get_layer(&(session.comp), session.selected_layer)->id : -1;
     if(click)
         Ihm_update_canvas();
 }
@@ -220,8 +362,9 @@ void Callback_draw() {
     writeString(X_F(X_CONTROLS + 152 + CHECKBOX_SIZE + 2), Y_F(177), "Prod");
     
     /* Box pour les calques */
-    fixeCouleur(0.4,0.4,0.4);
+    fixeCouleur(0.25,0.25,0.25);
     drawCarre(X_F(X_CONTROLS + 25), Y_F(184+80), X_F(W_IHM - 2), Y_F(184)); 
+    Draw_layer_list();
     
     /* Label canaux LUT affine */
     fixeCouleur(1.,1.,1.);
@@ -235,14 +378,14 @@ void Callback_draw() {
     /* Box pour les LUTs */
     fixeCouleur(0.4,0.4,0.4);
     drawCarre(X_F(X_CONTROLS + 25), Y_F(345+60), X_F(W_IHM - 2), Y_F(345)); 
+    Draw_lut_list();
     
     /* [PROVISOIRE] Box histo LUT */
     fixeCouleur(0.4,0.4,0.6);
     drawCarre(X_F(X_CONTROLS + 2), Y_F(345+60+3+60), X_F(W_IHM - 2), Y_F(345+60+3));
     
-    /* [PROVISOIRE] Box histo LUT */
-    fixeCouleur(0.6,0.4,0.4);
-    drawCarre(X_F(X_CONTROLS + 2), Y_F(H_IHM - 2), X_F(W_IHM - 2), Y_F(468+3));
+    /* Histo layer */
+    Draw_layer_histogram();
     
     /* Image du canvas */
     actualiseImage(session.canvas);

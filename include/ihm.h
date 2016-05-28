@@ -21,11 +21,17 @@ typedef struct Session {
             b_del_lut, b_l_up, b_l_down, b_l_mv_up, b_l_mv_down, b_lt_up,
             b_lt_down, b_lt_mv_up, b_lt_mv_down;
     Checkbox c_blend_norm, c_blend_repl, c_blend_add, c_blend_prod,
-                c_lt_r, c_lt_g, c_lt_b, c_lt_alpha;
+                c_lt_r, c_lt_g, c_lt_b, c_lt_alpha, c_layer_active[4],
+                c_lut_active[3];
     Slider s_opacity, s_l_r, s_l_g, s_l_b, s_lt_a, s_lt_b;
     
     uint8_t * canvas; /* Image affichée dans la fenêtre (RGB).
                        * Taille : W_CANVAS x H_CANVAS */
+                       
+    int selected_layer, /* si aucun, alors -1 */
+        selected_lut, /* idem */
+        first_layer, /* premier layer afficher dans la liste */
+        first_lut; /* idem */
 } Session;
 
 void Ihm_init();

@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <globals.h>
+#include <math.h>
 
 void Composition_init(Composition * comp) {
     memset(comp, 0, sizeof(Composition));
+    comp->histogram_id = -1;
 }
 
 void Composition_allocate_render(Composition * comp) {
@@ -40,16 +43,50 @@ void Checker_texture(uint8_t * img, unsigned w, unsigned h) {
     }
 }
 
+void Histogram_compute(Composition * comp, uint8_t * pixels, Lut lut) {
+    memset(&(comp->histogram), 0, sizeof(Histogram));
+    comp->histogram.max = 0;
+    
+    for(unsigned i = 0; i < 4 * comp->w * comp->h; i += 4) {
+        uint8_t r = lut.v[4*pixels[i]],
+                g = lut.v[4*pixels[i+1]+1],
+                b = lut.v[4*pixels[i+2]+2];
+        uint8_t lum = (r+g+b) / 3.;
+        
+        ++comp->histogram.r[r];
+        ++comp->histogram.g[g];
+        ++comp->histogram.b[b];
+        ++comp->histogram.lum[lum];
+    }
+    /* calcul du maximum */
+    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.r[i]); }
+    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.g[i]); }
+    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.b[i]); }
+    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.lum[i]); }
+}
+
+void Composition_render(Composition * comp) {
+    Checker_texture(comp->render, comp->w, comp->h); /* Checker */
+    Layer * l = comp->layers;
+    if(!l) return;
+    for(; l->next; l = l->next);
+    for(; l; l = l->prev) {
+        Layer_blend(l, comp->render, comp->w, comp->h);
+        if(comp->histogram_id == l->id) {
+            if(l->type == EFFECT_LAYER) 
+                Histogram_compute(comp, comp->render, Lut_identity());
+            else
+                Histogram_compute(comp, l->pixels, Lut_combine(l->luts));
+        }
+    }
+ }
+
 void Composition_canvas_img(Composition* comp, uint8_t * canvas, unsigned w, unsigned h) {
     memset(canvas, 0, w * h * sizeof(uint8_t));
     if(!comp->layers) /* La composition est vide, on affiche du noir */
         return;
-
-    /* Checker */
-    Checker_texture(comp->render, comp->w, comp->h);
     
-    /* Rendu de la compo. */
-    Layer_combine(comp->layers, comp->render, comp->w, comp->h);
+    Composition_render(comp);
     
     /* Suppression du canal alpha et resize pour l'affichage final. */
     float coeff;
@@ -79,7 +116,6 @@ void Composition_canvas_img(Composition* comp, uint8_t * canvas, unsigned w, uns
 }
 
 /* Retourne une identifiant libre pour éventuel nouveau calque */
-// TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO : méthode plus élaborée pour le faire
 unsigned Composition_get_id(Composition * comp) {
     unsigned i = 0;
     Layer * layer = comp->layers;
@@ -119,4 +155,28 @@ void Composition_add_layer_from_file(Composition* comp, const char* name) {
     Layer_add(layer, &(comp->layers));
     
     printf("Loaded image : %s ; %ux%u px.\n", name, comp->w, comp->h);
+}
+
+Layer * Composition_get_layer(Composition * comp, int i) {
+    if(i < 0) return NULL;
+    for(Layer * l = comp->layers; l; l = l->next) {
+        if(i == 0) return l;
+        --i;
+    }
+    return NULL;
+}
+Lut * Composition_get_lut(Layer * layer, int lut) {
+    if(lut < 0) return NULL;
+    for(Lut * l = layer->luts; l; l = l->next) {
+        if(lut == 0) return l;
+        --lut;
+    }
+    return NULL;
+}
+Layer * Composition_get_layer_by_id(Composition * comp, unsigned id) {
+    for(Layer * l = comp->layers; l; l = l->next) {
+        if(l->id == id)
+            return l;
+    }
+    return NULL;
 }

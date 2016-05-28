@@ -52,7 +52,4 @@ void Layer_move(Layer * layer, Layer ** list, bool begin);
 /* Mélange un calque avec une image. Le résultat va dans below. */
 void Layer_blend(const Layer * layer, uint8_t * below, unsigned w, unsigned h);
 
-/* Calcule l'image finale qu'on voit. */
-void Layer_combine(Layer * list, uint8_t * pixels, unsigned w, unsigned h);
-
 #endif /* LAYER_H */

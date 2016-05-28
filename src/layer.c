@@ -137,14 +137,3 @@ void Layer_blend(const Layer * layer, uint8_t * below, unsigned w, unsigned h) {
         (*blend)(layer->pixels + 4 * i, below + 4 * i, layer->opacity, &lut);
     }
 }
-
-void Layer_combine(Layer * list, uint8_t * dest, unsigned w, unsigned h) {
-    /* On part de la fin de la liste de calque */
-    Layer * layer = list;
-    for(; layer && layer->next; layer = layer->next);
-    
-    /* Et on remonte */
-    for(; layer; layer = layer->prev) {
-        Layer_blend(layer, dest, w, h);
-    }
-}

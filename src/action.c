@@ -26,6 +26,9 @@ void Action_execute(Action action) {
         case ADD_LAYER:
             Composition_add_layer_from_file(action.comp, &(action.param_string[0][0]));
             break;
+        case CHANGE_LAYER_VISIBILITY:
+            Composition_get_layer(action.comp, action.param_int[0])->active = action.param_int[1];
+            break;
         default: break;
     }    
 }
