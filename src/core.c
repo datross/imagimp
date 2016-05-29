@@ -122,6 +122,17 @@ unsigned Composition_get_id(Composition * comp) {
     return i;
 }
 
+/* Retourne une identifiant libre pour une nouvelle lut */
+unsigned Composition_get_id_lut(Layer * layer) {
+    unsigned i = 0;
+   Lut * lut = layer->luts;
+    for(; lut; lut = lut->next) {
+        if(lut->id >= i)
+            i = lut->id + 1;
+    }
+    return i;
+}
+
 unsigned Composition_add_layer_from_file(Composition* comp, const char* name) {
     int w, h, n;
     Layer * layer = malloc(sizeof(Layer));
@@ -203,6 +214,23 @@ unsigned Composition_add_layer_color(Composition * comp, uint8_t r, uint8_t g, u
     return layer->id;
 }
 
+unsigned Composition_add_lut_sepia(Composition * comp, unsigned layer_id) {
+    Layer * layer = Composition_get_layer_by_id(comp, layer_id);
+    if(!layer) 
+        return -1;
+    Lut * lut = malloc(sizeof(Lut));
+    if(!lut) {
+        fprintf(stderr, "Error memory allocation for LUT.\n");
+        exit(EXIT_FAILURE);
+    }
+    Lut_fill_sepia(lut);
+    lut->id = Composition_get_id_lut(layer);
+    lut->active = true;
+    for(unsigned i = 0; i < 4; ++i) { lut->chn[i] = true; }
+    Lut_add(lut, &(layer->luts));
+    return lut->id;
+}
+
 Layer * Composition_get_layer(Composition * comp, int i) {
     if(i < 0) return NULL;
     for(Layer * l = comp->layers; l; l = l->next) {
@@ -219,6 +247,13 @@ Lut * Composition_get_lut(Layer * layer, int lut) {
     }
     return NULL;
 }
+Lut * Composition_get_lut_by_id(Layer * layer, unsigned id) {
+    for(Lut * lut = layer->luts; lut; lut = lut->next) {
+        if(lut->id == id)
+            return lut;
+    }
+    return NULL;
+}
 Layer * Composition_get_layer_by_id(Composition * comp, unsigned id) {
     for(Layer * l = comp->layers; l; l = l->next) {
         if(l->id == id)
@@ -229,6 +264,15 @@ Layer * Composition_get_layer_by_id(Composition * comp, unsigned id) {
 
 int Composition_get_layer_position(Composition * comp, unsigned id) {
     Layer * l = comp->layers;
+    for(unsigned i = 0; l; l = l->next) {
+        if(l->id == id) return i;
+        ++i;
+    }
+    return -1;
+}
+
+int Composition_get_lut_position(Layer * layer, unsigned id) {
+    Lut * l = layer->luts;
     for(unsigned i = 0; l; l = l->next) {
         if(l->id == id) return i;
         ++i;

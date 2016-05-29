@@ -27,7 +27,9 @@ Button Button_create(unsigned x, unsigned y, unsigned w, unsigned h, char *text)
 	return b;
 }
 void Button_draw(Button * b) {
-    fixeCouleur(1.,1.,1.);
+    fixeCouleur(0.1,0.1,0.1);
+    drawCarre(X_F(b->area.x),Y_F(b->area.y + b->area.h), X_F(b->area.x + b->area.w), Y_F(b->area.y));
+    fixeCouleur(0.7,0.7,0.7);
     drawCarreVide(X_F(b->area.x),Y_F(b->area.y + b->area.h), X_F(b->area.x + b->area.w), Y_F(b->area.y));
     if(b->clicked) {
         fixeCouleur(0.5,0.5,0.2);

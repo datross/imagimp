@@ -54,6 +54,37 @@ Action Action_execute(Action action) {
             Layer_move(Composition_get_layer_by_id(action.comp, action.param_int[0]),
                             &(action.comp->layers), action.param_int[1]);
             break;
+        case ADD_LUT:
+            switch(action.param_int[1]) {
+                case 1:
+                    action.param_int[2] = Composition_add_lut_sepia(action.comp, action.param_int[0]);
+                    break;
+                default: break;
+            }
+            break;
+        case CHANGE_LUT_VISIBILITY:
+            switch(action.param_int[2]) {
+                case 0: /* toute la lut */
+                    Composition_get_lut_by_id(Composition_get_layer_by_id(action.comp, action.param_int[0]), 
+                        action.param_int[1])->active = action.param_int[3];
+                    break;
+                case 1: /* rouge */
+                case 2: /* vert */
+                case 3: /* bleu */
+                case 4: /* alpha */
+                    Composition_get_lut_by_id(Composition_get_layer_by_id(action.comp, action.param_int[0]), 
+                        action.param_int[1])->chn[action.param_int[2] - 1] = action.param_int[3];
+                    break;
+                default: break;
+            }
+            break;
+        case CHANGE_LUT_POSITION: {
+            Layer * layer = Composition_get_layer_by_id(action.comp, action.param_int[0]);
+            Lut_move(Composition_get_lut_by_id(layer, action.param_int[1]), &(layer->luts), 
+                                                            action.param_int[2]); }
+            break; 
+        case REMOVE_LUT:
+            Lut_remove(action.param_ptr, &(Composition_get_layer_by_id(action.comp, action.param_int[0])->luts));
         default: break;
     }    
     return action;

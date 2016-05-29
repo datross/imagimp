@@ -278,7 +278,7 @@ void Lut_fill_sepia(Lut * l) {
     for(unsigned i = 0; i < 256; ++i) {
         l->v[4*i] = sepia[3 * i];
         l->v[4*i+1] = sepia[3 * i + 1];
-        l->v[4*i+2] = sepia[3 * i + 1];
+        l->v[4*i+2] = sepia[3 * i + 2];
         l->v[4*i+3] = i;
     }
 }

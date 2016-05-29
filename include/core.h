@@ -39,6 +39,9 @@ unsigned Composition_add_layer_color(Composition * comp, uint8_t r, uint8_t g, u
 Layer * Composition_get_layer(Composition * comp, int num);
 Layer * Composition_get_layer_by_id(Composition * comp, unsigned id);
 int Composition_get_layer_position(Composition * comp, unsigned id); /* -1 si il n'existe pas*/
+int Composition_get_lut_position(Layer * layer, unsigned id); /* -1 si il n'existe pas */
 Lut * Composition_get_lut(Layer * layer, int num);
+Lut * Composition_get_lut_by_id(Layer * layer, unsigned id);
+unsigned Composition_add_lut_sepia(Composition * comp, unsigned layer_id);
 
 #endif /* CORE_H */
