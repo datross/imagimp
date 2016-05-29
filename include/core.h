@@ -33,6 +33,9 @@ void Composition_canvas_img(Composition* comp, uint8_t * canvas, unsigned w, uns
 /* Fait un rendu de la composition, et calcule l'histogramme */
 void Composition_render(Composition * comp);
 
+/* Enregistre le rendu de la composition dans une image */
+void Composition_export(Composition * comp, const char * name);
+
 unsigned Composition_add_layer_from_file(Composition*, const char*);
 unsigned Composition_add_layer_effect(Composition * comp);
 unsigned Composition_add_layer_color(Composition * comp, uint8_t r, uint8_t g, uint8_t b);
@@ -43,5 +46,6 @@ int Composition_get_lut_position(Layer * layer, unsigned id); /* -1 si il n'exis
 Lut * Composition_get_lut(Layer * layer, int num);
 Lut * Composition_get_lut_by_id(Layer * layer, unsigned id);
 unsigned Composition_add_lut_sepia(Composition * comp, unsigned layer_id);
+unsigned Composition_add_lut_affine(Composition * comp, unsigned layer_id, float a, float b);
 
 #endif /* CORE_H */

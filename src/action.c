@@ -56,6 +56,10 @@ Action Action_execute(Action action) {
             break;
         case ADD_LUT:
             switch(action.param_int[1]) {
+                case 0:
+                    action.param_int[2] = Composition_add_lut_affine(action.comp, action.param_int[0], 
+                                                        action.param_float[0], action.param_float[1]);
+                    break;
                 case 1:
                     action.param_int[2] = Composition_add_lut_sepia(action.comp, action.param_int[0]);
                     break;
@@ -83,8 +87,18 @@ Action Action_execute(Action action) {
             Lut_move(Composition_get_lut_by_id(layer, action.param_int[1]), &(layer->luts), 
                                                             action.param_int[2]); }
             break; 
+        case CHANGE_LUT_PARAMETER: {
+            Lut * lut = Composition_get_lut_by_id(Composition_get_layer_by_id(action.comp,
+                    action.param_int[0]), action.param_int[1]);
+            if(lut) Lut_fill_affine(lut, action.param_float[2], action.param_float[3]);
+            }
+            break;
         case REMOVE_LUT:
             Lut_remove(action.param_ptr, &(Composition_get_layer_by_id(action.comp, action.param_int[0])->luts));
+            break;
+        case EXPORT_COMPOSITION:
+            Composition_export(action.comp, action.param_string[0]);
+            break;
         default: break;
     }    
     return action;

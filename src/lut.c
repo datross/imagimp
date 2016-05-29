@@ -7,8 +7,10 @@
 
 void Lut_fill_affine(Lut * l, float a, float b) {
     l->type = LUT_AFFINE;
+    l->a = a;
+    l->b = b;
     for(unsigned i = 0; i < 256; ++i) {
-        float fval = a * i + b;
+        float fval = a * (i - 128.) + b;
         fval = min(255., max(0, fval));
         l->v[4*i] = l->v[4*i+1] = l->v[4*i+2] = l->v[4*i+3] = fval;
     }

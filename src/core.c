@@ -5,8 +5,11 @@
 #include <stdlib.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 #include <globals.h>
 #include <math.h>
+#include <ppm.h>
 
 void Composition_init(Composition * comp) {
     memset(comp, 0, sizeof(Composition));
@@ -111,6 +114,20 @@ void Composition_canvas_img(Composition* comp, uint8_t * canvas, unsigned w, uns
     }
 }
 
+void Composition_export(Composition * comp, const char * name) {
+    /* Détermination de l'extension */
+    const char * extension = name + strlen(name) - strlen(".png"); /* marche pour '.ppm' aussi. */
+    if(!strcmp(extension, ".png")) { /* c'est du png */
+        if(!stbi_write_png(name, comp->w, comp->h, 4, comp->render, 4 * comp->w))
+            fprintf(stderr, "Fail to save the file.\n");
+    } else if(!strcmp(extension, ".ppm")) {/* ppm */
+        if(!ppm_save(name, comp->w, comp->h, comp->render))
+            fprintf(stderr, "Fail to save the file.\n");
+    } else {
+        fprintf(stderr, "Format not recognized.\n");
+    }
+}
+
 /* Retourne une identifiant libre pour éventuel nouveau calque */
 unsigned Composition_get_id(Composition * comp) {
     unsigned i = 0;
@@ -134,6 +151,7 @@ unsigned Composition_get_id_lut(Layer * layer) {
 }
 
 unsigned Composition_add_layer_from_file(Composition* comp, const char* name) {
+    const char * extension = name + strlen(name) - strlen(".ppm"); /* marche pour '.ppm' aussi. */
     int w, h, n;
     Layer * layer = malloc(sizeof(Layer));
     if(!layer) {
@@ -145,7 +163,12 @@ unsigned Composition_add_layer_from_file(Composition* comp, const char* name) {
     layer->opacity = 1.;
     layer->blending = BLEND_NORMAL;
     layer->active = true;
-    layer->pixels = stbi_load(name, &w, &h, &n, 4);
+    if(!strcmp(extension, ".ppm")) {
+        printf("oinfdf\n");
+        layer->pixels = ppm_load(name, &w, &h);
+    } else {
+        layer->pixels = stbi_load(name, &w, &h, &n, 4);
+    }
     if(!layer->pixels) {
         fprintf(stderr, "Error reading image : %s.\n", name);
         return -1;
@@ -153,9 +176,12 @@ unsigned Composition_add_layer_from_file(Composition* comp, const char* name) {
     if(!comp->layers) { /* Si la composition est vide */
         comp->w = w;
         comp->h = h;
+        Composition_deinit(comp);
         Composition_allocate_render(comp);
     } else if(comp->w != w || comp->h != h) {
         fprintf(stderr, "Image and composition resolution are different.\n");
+        Layer_clear(layer);
+        free(layer);
         return -1;
     }
     layer->id = Composition_get_id(comp);
@@ -224,6 +250,23 @@ unsigned Composition_add_lut_sepia(Composition * comp, unsigned layer_id) {
         exit(EXIT_FAILURE);
     }
     Lut_fill_sepia(lut);
+    lut->id = Composition_get_id_lut(layer);
+    lut->active = true;
+    for(unsigned i = 0; i < 4; ++i) { lut->chn[i] = true; }
+    Lut_add(lut, &(layer->luts));
+    return lut->id;
+}
+
+unsigned Composition_add_lut_affine(Composition * comp, unsigned layer_id, float a, float b) {
+    Layer * layer = Composition_get_layer_by_id(comp, layer_id);
+    if(!layer) 
+        return -1;
+    Lut * lut = malloc(sizeof(Lut));
+    if(!lut) {
+        fprintf(stderr, "Error memory allocation for LUT.\n");
+        exit(EXIT_FAILURE);
+    }
+    Lut_fill_affine(lut, a, b);
     lut->id = Composition_get_id_lut(layer);
     lut->active = true;
     for(unsigned i = 0; i < 4; ++i) { lut->chn[i] = true; }

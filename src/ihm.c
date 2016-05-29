@@ -42,7 +42,7 @@ void Ihm_init() {
     }
     
     session.b_del_lut = Button_create(X_CONTROLS + 102, 184+80+5, 95, 18, "Delete LUT");
-    session.b_aff_lut = Button_create(X_CONTROLS + 2, 184+80+5+18+3, 95, 18, "LUT (ax+b)");
+    session.b_aff_lut = Button_create(X_CONTROLS + 2, 184+80+5+18+3, 95, 18, "LUT (a, b)");
     session.b_sep_lut = Button_create(X_CONTROLS + 2, 184+80+5, 95, 18, "LUT sepia");
     session.c_lt_r = Checkbox_create(W_IHM - 16 - 3*18, 184+80+5+18+5, true);
     Checkbox_color(&(session.c_lt_r), 1.,0,0);
@@ -52,8 +52,8 @@ void Ihm_init() {
     Checkbox_color(&(session.c_lt_b), 0,0,1.);
     session.c_lt_alpha = Checkbox_create(W_IHM - 16 - 0*18, 184+80+5+18+5, true);
     Checkbox_color(&(session.c_lt_alpha), 1.,1.,1.);
-    session.s_lt_a = Slider_create(X_CONTROLS + 22, 184+80+5+18+3+18+3, 175, 14, -30, 30, 1., 0.1); 
-    session.s_lt_b = Slider_create(X_CONTROLS + 22, 184+80+5+18+3+18+3+14+3, 175, 14, -1000, 1000, 0, 1.); 
+    session.s_lt_a = Slider_create(X_CONTROLS + 22, 184+80+5+18+3+18+3, 175, 14, -10, 10, 1., 0.1); 
+    session.s_lt_b = Slider_create(X_CONTROLS + 22, 184+80+5+18+3+18+3+14+3, 175, 14, -94, 350, 128, 1.); 
     
     session.b_lt_up = Button_create(X_CONTROLS + 2, 345, 20, 13, "^");
     session.b_lt_mv_up = Button_create(X_CONTROLS + 2, 360, 20, 13, "up");
@@ -179,7 +179,7 @@ void Draw_lut_list() {
         Lut * l = Composition_get_lut(Composition_get_layer(&(session.comp), session.selected_layer), session.first_lut + i);
         session.c_lut_active[i].value = l->active;
         Checkbox_draw(session.c_lut_active + i);
-        snprintf(str, 100, "%u", l->id);
+        snprintf(str, 100, "%u | %s", l->id, l->type == LUT_AFFINE ? "AFFINE" : "SEPIA");
         fixeCouleur(1,1,1);
         writeString(X_F(X_CONTROLS + 22 + CHECKBOX_SIZE + 10), Y_F(345 + (i+1) * 20 - 5), str);
     }
@@ -272,7 +272,14 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Button_update(&(session.b_save), x, y, click)) {
     
     } else if(Button_update(&(session.b_export_comp), x, y, click)) {
-    
+        if(session.comp.layers) {
+            char const * name = tinyfd_saveFileDialog ("Export composition", "", 0, NULL, "image files") ;
+            if(name) {
+                action.type = EXPORT_COMPOSITION;
+                strcpy(&(action.param_string[0][0]), name);
+                History_do(&(session.history), action);
+            }
+        }
     } else if(Button_update(&(session.b_export_hist), x, y, click)) {
     
     } else if(Button_update(&(session.b_open_layer), x, y, click)) {
@@ -344,7 +351,14 @@ void Callback_mouse(int button, int state, int x, int y) {
             History_do(&(session.history), action);
         }
     } else if(Button_update(&(session.b_aff_lut), x, y, click)) {
-    
+        if(layer) {
+            action.type = ADD_LUT;
+            action.param_int[0] = layer->id;
+            action.param_int[1] = 0; /* affine */
+            action.param_float[0] = session.s_lt_a.value;
+            action.param_float[1] = session.s_lt_b.value;
+            History_do(&(session.history), action);
+        }
     } else if(Button_update(&(session.b_sep_lut), x, y, click)) {
         if(layer) {
             action.type = ADD_LUT;
@@ -402,10 +416,17 @@ void Callback_mouse(int button, int state, int x, int y) {
                 History_do(&(session.history), action);
             }
         }
-    } else if(Slider_update(&(session.s_lt_a), x, y, click)) {
-        
-    } else if(Slider_update(&(session.s_lt_b), x, y, click)) {
-        
+    } else if(Slider_update(&(session.s_lt_a), x, y, click) || Slider_update(&(session.s_lt_b), x, y, click)) {
+        if(lut && lut->type == LUT_AFFINE) {
+            action.type = CHANGE_LUT_PARAMETER;
+            action.param_int[0] = layer->id;
+            action.param_int[1] = lut->id;
+            action.param_float[0] = lut->a; /* anciens paramètres */
+            action.param_float[1] = lut->b;
+            action.param_float[2] = session.s_lt_a.value; /* nouveaux paramètres */
+            action.param_float[3] = session.s_lt_b.value;
+            History_do(&(session.history), action);
+        }
     } else if(Checkbox_update(&(session.c_blend_norm), x, y, click)) {
         if(layer && session.c_blend_norm.value) {
             action.type = CHANGE_LAYER_BLEND_MODE;
@@ -498,6 +519,11 @@ void Callback_mouse(int button, int state, int x, int y) {
         session.c_lt_g.value = lut->chn[1];
         session.c_lt_b.value = lut->chn[2];
         session.c_lt_alpha.value = lut->chn[3];
+        
+        if(lut->type == LUT_AFFINE) {
+            session.s_lt_a.value = lut->a;
+            session.s_lt_b.value = lut->b;
+        }
     }
     /* On update l'affichage le canvas seulement si on a cliqué (et pas décliqué) */
     if(click)

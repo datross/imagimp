@@ -19,6 +19,9 @@ typedef struct Lut {
     unsigned int id;
 	uint8_t v[4*256];
 	struct Lut * next, *prev;
+    
+    /* bricolage de dernière minute pour l'historique */
+    float a, b;
 } Lut;
 
 /* Ces fonctions n'initialisent pas tous les champs de la LUT */
