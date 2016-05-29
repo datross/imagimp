@@ -41,6 +41,7 @@ void Layer_remove(Layer * layer, Layer ** list) {
         if(layer->next)
             layer->next->prev = layer->prev;
     }
+    layer->next = layer->prev = NULL;
 }
 
 void Layer_move(Layer * layer, Layer ** list, bool begin) {

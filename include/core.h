@@ -7,10 +7,10 @@
 #include <globals.h>
 
 typedef struct Histogram {
-    unsigned r[255],
-             g[255],
-             b[255],
-             lum[255];
+    unsigned r[256],
+             g[256],
+             b[256],
+             lum[256];
     unsigned max; /* valeur maximale des 5 canaux */
 } Histogram;
 
@@ -33,9 +33,12 @@ void Composition_canvas_img(Composition* comp, uint8_t * canvas, unsigned w, uns
 /* Fait un rendu de la composition, et calcule l'histogramme */
 void Composition_render(Composition * comp);
 
-void Composition_add_layer_from_file(Composition*, const char*);
+unsigned Composition_add_layer_from_file(Composition*, const char*);
+unsigned Composition_add_layer_effect(Composition * comp);
+unsigned Composition_add_layer_color(Composition * comp, uint8_t r, uint8_t g, uint8_t b);
 Layer * Composition_get_layer(Composition * comp, int num);
 Layer * Composition_get_layer_by_id(Composition * comp, unsigned id);
+int Composition_get_layer_position(Composition * comp, unsigned id); /* -1 si il n'existe pas*/
 Lut * Composition_get_lut(Layer * layer, int num);
 
 #endif /* CORE_H */

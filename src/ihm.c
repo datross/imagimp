@@ -26,7 +26,7 @@ void Ihm_init() {
     
     session.s_opacity = Slider_create(X_CONTROLS + 72, 91+18+14+3+18+5, 126, 14, 0, 1, 1, 0.03); 
     
-    session.c_blend_norm = Checkbox_create(X_CONTROLS + 2, 91+18+14+3+18+5+14+3, true);
+    session.c_blend_norm = Checkbox_create(X_CONTROLS + 2, 91+18+14+3+18+5+14+3, false);
     session.c_blend_repl = Checkbox_create(X_CONTROLS + 52, 91+18+14+3+18+5+14+3, false);
     session.c_blend_add = Checkbox_create(X_CONTROLS + 102, 91+18+14+3+18+5+14+3, false);
     session.c_blend_prod = Checkbox_create(X_CONTROLS + 152, 91+18+14+3+18+5+14+3, false);
@@ -157,7 +157,7 @@ void Draw_layer_list() {
         Layer * l = Composition_get_layer(&(session.comp), session.first_layer + i);
         session.c_layer_active[i].value = l->active;
         Checkbox_draw(session.c_layer_active + i);
-        snprintf(str, 100, "%u", l->id);
+        snprintf(str, 100, "%u | %s", l->id, l->type == NORMAL_LAYER ? "NORMAL" : "EFFECT");
         fixeCouleur(1,1,1);
         writeString(X_F(X_CONTROLS + 22 + CHECKBOX_SIZE + 10), Y_F(184 + (i+1) * 20 - 5), str);
     }
@@ -168,7 +168,7 @@ void Draw_lut_list() {
     if(session.selected_lut >= 0) {
         fixeCouleur(0.4,0,0);
         unsigned tmp_num_lut = session.selected_lut - session.first_lut;
-        drawCarre(X_F(X_CONTROLS + 23), Y_F(184 + (tmp_num_lut + 1) * 20), X_F(W_IHM - 2), Y_F(184 + tmp_num_lut * 20));
+        drawCarre(X_F(X_CONTROLS + 23), Y_F(345 + (tmp_num_lut + 1) * 20), X_F(W_IHM - 2), Y_F(345 + tmp_num_lut * 20));
     }
     
     /* Dessin des checkbox et étiquettes */
@@ -179,7 +179,7 @@ void Draw_lut_list() {
         Checkbox_draw(session.c_lut_active + i);
         snprintf(str, 100, "%u", l->id);
         fixeCouleur(1,1,1);
-        writeString(X_F(X_CONTROLS + 22 + CHECKBOX_SIZE + 10), Y_F(184 + (i+1) * 20 - 5), str);
+        writeString(X_F(X_CONTROLS + 22 + CHECKBOX_SIZE + 10), Y_F(345 + (i+1) * 20 - 5), str);
     }
 }
 
@@ -190,7 +190,7 @@ void Draw_layer_histogram() {
              w = W_IHM - X_CONTROLS - 4,
              h = H_IHM - 2 - 469;
     float scale_h = (float)h / H.max;
-    for(unsigned i = 1; i < w; ++i) {
+    for(unsigned i = 1; i < w+1; ++i) {
         unsigned k = 255. * (float)(i-1) / w;
         unsigned j = 255. * (float)i / w;
         
@@ -223,6 +223,12 @@ void Callback_mouse(int button, int state, int x, int y) {
 	else 
 		click = false;
         
+    Layer * layer = Composition_get_layer(&(session.comp), session.selected_layer);
+    /* Action que l'on va paramétré après */
+    Action action;
+    action.comp = &(session.comp);
+    action.undoable = true;
+        
     /* Test de tous les widgets */
     if(Button_update(&(session.b_open), x, y, click)) {
 
@@ -233,34 +239,64 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Button_update(&(session.b_export_hist), x, y, click)) {
     
     } else if(Button_update(&(session.b_open_layer), x, y, click)) {
-        Action action;
         action.type = ADD_LAYER;
         action.param_int[0] = 0; /* calque depuis fichier */
-        action.comp = &(session.comp);
         char const * name = tinyfd_openFileDialog("Import image as layer", NULL, 0, NULL, NULL, 0);
         if(name) {
             strcpy(&(action.param_string[0][0]), name);
             History_do(&(session.history), action);
         }
     } else if(Button_update(&(session.b_norm_layer), x, y, click)) {
-    
+        action.type = ADD_LAYER;
+        action.param_int[0] = 1; /* calque de couleur */
+        action.param_int[2] = session.s_l_r.value; /* Couleur de remplissage */
+        action.param_int[3] = session.s_l_g.value;
+        action.param_int[4] = session.s_l_b.value;
+        History_do(&(session.history), action);
     } else if(Button_update(&(session.b_effect_layer), x, y, click)) {
-    
+        action.type = ADD_LAYER;
+        action.param_int[0] = 2; /* calque d'effet */
+        History_do(&(session.history), action);
     } else if(Button_update(&(session.b_del_layer), x, y, click)) {
-    
+        if(layer) {
+            action.type = REMOVE_LAYER;
+            action.param_int[0] = layer->id;
+            action.param_int[1] = Composition_get_layer_position(action.comp, action.param_int[0]);
+            action.param_ptr = layer;
+            History_do(&(session.history), action);
+        }
     } else if(Button_update(&(session.b_l_up), x, y, click)) {
+        unsigned n = Get_nb_layers();
         session.selected_layer = max(session.selected_layer - 1, 0);
         if(session.first_layer > session.selected_layer)
             session.first_layer = session.selected_layer;
+        if(!n) {
+            session.selected_layer = -1;
+            session.first_layer = 0;
+        }
     } else if(Button_update(&(session.b_l_mv_up), x, y, click)) {
-    
+        if(layer) {
+            action.type = CHANGE_LAYER_POSITION;
+            action.param_int[0] = layer->id;
+            action.param_int[1] = true; /* vers le début de la liste */
+            History_do(&(session.history), action);
+        }
     } else if(Button_update(&(session.b_l_mv_down), x, y, click)) {
-    
+        if(layer) {
+            action.type = CHANGE_LAYER_POSITION;
+            action.param_int[0] = layer->id;
+            action.param_int[1] = false; /* vers la fin de la liste */
+            History_do(&(session.history), action);
+        }
     } else if(Button_update(&(session.b_l_down), x, y, click)) {
-        session.selected_layer = min(session.selected_layer + 1,
-                                                        Get_nb_layers() - 1);
+        unsigned n = Get_nb_layers();
+        session.selected_layer = min(session.selected_layer + 1, n - 1);
         if(session.selected_layer > session.first_layer + 3)
             session.first_layer = session.selected_layer - 3;
+        if(!n) {
+            session.selected_layer = -1;
+            session.first_layer = 0;
+        }
     } else if(Button_update(&(session.b_del_lut), x, y, click)) {
     
     } else if(Button_update(&(session.b_aff_lut), x, y, click)) {
@@ -268,13 +304,27 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Button_update(&(session.b_sep_lut), x, y, click)) {
     
     } else if(Button_update(&(session.b_lt_up), x, y, click)) {
-    
+        unsigned n = Get_nb_luts();
+        session.selected_lut = max(session.selected_lut - 1, 0);
+        if(session.first_lut > session.selected_lut)
+            session.first_lut = session.selected_lut;
+        if(!n) {
+            session.selected_lut = -1;
+            session.first_lut = 0;
+        }
     } else if(Button_update(&(session.b_lt_mv_up), x, y, click)) {
     
     } else if(Button_update(&(session.b_lt_mv_down), x, y, click)) {
     
     } else if(Button_update(&(session.b_lt_down), x, y, click)) {
-    
+        unsigned n = Get_nb_luts();
+        session.selected_lut = min(session.selected_lut + 1, n - 1);
+        if(session.selected_lut > session.first_lut + 2)
+            session.first_lut = session.selected_lut - 2;
+        if(!n) {
+            session.selected_lut = -1;
+            session.first_lut = 0;
+        }
     } else if(Slider_update(&(session.s_l_r), x, y, click)) {
         
     } else if(Slider_update(&(session.s_l_g), x, y, click)) {
@@ -282,19 +332,51 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Slider_update(&(session.s_l_b), x, y, click)) {
         
     } else if(Slider_update(&(session.s_opacity), x, y, click)) {
-        
+        if(session.selected_layer >= 0) {
+            action.type = CHANGE_LAYER_OPACITY;
+            if(layer) {
+                action.param_float[0] = layer->opacity; /* ancienne opacité */
+                action.param_float[1] = session.s_opacity.value; /* nouvelle opacity */
+                action.param_int[2] = layer->id;
+                History_do(&(session.history), action);
+            }
+        }
     } else if(Slider_update(&(session.s_lt_a), x, y, click)) {
         
     } else if(Slider_update(&(session.s_lt_b), x, y, click)) {
         
     } else if(Checkbox_update(&(session.c_blend_norm), x, y, click)) {
-        
+        if(layer && session.c_blend_norm.value) {
+            action.type = CHANGE_LAYER_BLEND_MODE;
+            action.param_int[0] = layer->blending; /* ancien */
+            action.param_int[1] = BLEND_NORMAL;
+            action.param_int[2] = layer->id;
+            History_do(&(session.history), action);
+        }
     } else if(Checkbox_update(&(session.c_blend_repl), x, y, click)) {
-        
+        if(layer && session.c_blend_repl.value) {
+            action.type = CHANGE_LAYER_BLEND_MODE;
+            action.param_int[0] = layer->blending; /* ancien */
+            action.param_int[1] = BLEND_REPLACE;
+            action.param_int[2] = layer->id;
+            History_do(&(session.history), action);
+        }
     } else if(Checkbox_update(&(session.c_blend_add), x, y, click)) {
-        
+        if(layer && session.c_blend_add.value) {
+            action.type = CHANGE_LAYER_BLEND_MODE;
+            action.param_int[0] = layer->blending; /* ancien */
+            action.param_int[1] = BLEND_ADD;
+            action.param_int[2] = layer->id;
+            History_do(&(session.history), action);
+        }
     } else if(Checkbox_update(&(session.c_blend_prod), x, y, click)) {
-        
+        if(layer && session.c_blend_prod.value) {
+            action.type = CHANGE_LAYER_BLEND_MODE;
+            action.param_int[0] = layer->blending; /* ancien */
+            action.param_int[1] = BLEND_PRODUCT;
+            action.param_int[2] = layer->id;
+            History_do(&(session.history), action);
+        }
     } else if(Checkbox_update(&(session.c_lt_r), x, y, click)) {
         
     } else if(Checkbox_update(&(session.c_lt_g), x, y, click)) {
@@ -304,10 +386,25 @@ void Callback_mouse(int button, int state, int x, int y) {
     } else if(Checkbox_update(&(session.c_lt_alpha), x, y, click)) {
         
     }
+    
+    /* On réactualise le calque sélectionné pour l'update des données
+     * des widgets */
+    layer = Composition_get_layer(&(session.comp), session.selected_layer); 
+    
     Update_layer_list(x, y, click);
     Update_lut_list(x, y, click);
-    session.comp.histogram_id = Composition_get_layer(&(session.comp), session.selected_layer) ? 
-                        Composition_get_layer(&(session.comp), session.selected_layer)->id : -1;
+    
+    /* update des valeurs des widgets */
+    session.comp.histogram_id = layer ? layer->id : -1;
+    session.s_opacity.value = layer ? layer->opacity : 1.;
+    session.c_blend_norm.value = session.c_blend_repl.value =
+        session.c_blend_add.value = session.c_blend_prod.value = false;
+         if(layer && layer->blending == BLEND_NORMAL)  session.c_blend_norm.value = true;
+    else if(layer && layer->blending == BLEND_REPLACE) session.c_blend_repl.value = true;
+    else if(layer && layer->blending == BLEND_ADD)     session.c_blend_add.value  = true;
+    else if(layer && layer->blending == BLEND_PRODUCT) session.c_blend_prod.value = true;
+    
+    /* On update l'affichage le canvas seulement si on a cliqué (et pas décliqué) */
     if(click)
         Ihm_update_canvas();
 }
@@ -376,7 +473,7 @@ void Callback_draw() {
     writeString(X_F(X_CONTROLS + 2), Y_F(184+80+5+18+3+18+31), "b=");
     
     /* Box pour les LUTs */
-    fixeCouleur(0.4,0.4,0.4);
+    fixeCouleur(0.25,0.25,0.25);
     drawCarre(X_F(X_CONTROLS + 25), Y_F(345+60), X_F(W_IHM - 2), Y_F(345)); 
     Draw_lut_list();
     

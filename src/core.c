@@ -44,9 +44,7 @@ void Checker_texture(uint8_t * img, unsigned w, unsigned h) {
 }
 
 void Histogram_compute(Composition * comp, uint8_t * pixels, Lut lut) {
-    memset(&(comp->histogram), 0, sizeof(Histogram));
-    comp->histogram.max = 0;
-    
+    memset(&(comp->histogram), 0, sizeof(Histogram));    
     for(unsigned i = 0; i < 4 * comp->w * comp->h; i += 4) {
         uint8_t r = lut.v[4*pixels[i]],
                 g = lut.v[4*pixels[i+1]+1],
@@ -59,10 +57,10 @@ void Histogram_compute(Composition * comp, uint8_t * pixels, Lut lut) {
         ++comp->histogram.lum[lum];
     }
     /* calcul du maximum */
-    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.r[i]); }
-    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.g[i]); }
-    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.b[i]); }
-    for(unsigned i = 0; i < 255; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.lum[i]); }
+    for(unsigned i = 0; i < 256; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.r[i]); }
+    for(unsigned i = 0; i < 256; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.g[i]); }
+    for(unsigned i = 0; i < 256; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.b[i]); }
+    for(unsigned i = 0; i < 256; ++i) { comp->histogram.max = max(comp->histogram.max, comp->histogram.lum[i]); }
 }
 
 void Composition_render(Composition * comp) {
@@ -83,8 +81,6 @@ void Composition_render(Composition * comp) {
 
 void Composition_canvas_img(Composition* comp, uint8_t * canvas, unsigned w, unsigned h) {
     memset(canvas, 0, w * h * sizeof(uint8_t));
-    if(!comp->layers) /* La composition est vide, on affiche du noir */
-        return;
     
     Composition_render(comp);
     
@@ -126,7 +122,7 @@ unsigned Composition_get_id(Composition * comp) {
     return i;
 }
 
-void Composition_add_layer_from_file(Composition* comp, const char* name) {
+unsigned Composition_add_layer_from_file(Composition* comp, const char* name) {
     int w, h, n;
     Layer * layer = malloc(sizeof(Layer));
     if(!layer) {
@@ -141,7 +137,7 @@ void Composition_add_layer_from_file(Composition* comp, const char* name) {
     layer->pixels = stbi_load(name, &w, &h, &n, 4);
     if(!layer->pixels) {
         fprintf(stderr, "Error reading image : %s.\n", name);
-        return;
+        return -1;
     }
     if(!comp->layers) { /* Si la composition est vide */
         comp->w = w;
@@ -149,12 +145,62 @@ void Composition_add_layer_from_file(Composition* comp, const char* name) {
         Composition_allocate_render(comp);
     } else if(comp->w != w || comp->h != h) {
         fprintf(stderr, "Image and composition resolution are different.\n");
-        return;
+        return -1;
     }
     layer->id = Composition_get_id(comp);
     Layer_add(layer, &(comp->layers));
     
     printf("Loaded image : %s ; %ux%u px.\n", name, comp->w, comp->h);
+    return layer->id;
+}
+
+unsigned Composition_add_layer_effect(Composition * comp) {
+    Layer * layer = malloc(sizeof(Layer));
+    if(!layer) {
+        fprintf(stderr, "Error memory allocation for layer.\n");
+        exit(EXIT_FAILURE);
+    }
+    memset(layer, 0, sizeof(Layer));
+    layer->type = EFFECT_LAYER;
+    layer->active = true;
+    layer->opacity = 1.0;
+    layer->blending = BLEND_NORMAL; /* par principe je le met, mais c'est inutile */
+    layer->id = Composition_get_id(comp);
+    Layer_add(layer, &(comp->layers));
+    printf("Added effect layer successfully.\n");
+    return layer->id;
+}
+
+unsigned Composition_add_layer_color(Composition * comp, uint8_t r, uint8_t g, uint8_t b) {
+    if(!comp->layers) { /* compo vide, on connait pas le taille, donc on ajoutte rien */
+        fprintf(stderr, "Empty composition, can't add color layer.\n");
+        return -1;
+    }
+    Layer * layer = malloc(sizeof(Layer));
+    if(!layer) {
+        fprintf(stderr, "Error memory allocation for layer.\n");
+        exit(EXIT_FAILURE);
+    }
+    memset(layer, 0, sizeof(Layer));
+    layer->type = NORMAL_LAYER;
+    layer->active = true;
+    layer->opacity = 1.0;
+    layer->blending = BLEND_NORMAL; 
+    layer->pixels = malloc(4 * comp->w * comp->h * sizeof(uint8_t));
+    if(!layer->pixels) {
+        fprintf(stderr, "Error memory allocation for layer content.\n");
+        exit(EXIT_FAILURE);
+    }
+    for(unsigned i = 0; i < 4 * comp->w * comp->h; i += 4) {
+        layer->pixels[i]   = r;
+        layer->pixels[i+1] = g;
+        layer->pixels[i+2] = b;
+        layer->pixels[i+3] = 255;
+    }
+    layer->id = Composition_get_id(comp);
+    Layer_add(layer, &(comp->layers));
+    printf("Added color layer successfully.\n");
+    return layer->id;
 }
 
 Layer * Composition_get_layer(Composition * comp, int i) {
@@ -179,4 +225,13 @@ Layer * Composition_get_layer_by_id(Composition * comp, unsigned id) {
             return l;
     }
     return NULL;
+}
+
+int Composition_get_layer_position(Composition * comp, unsigned id) {
+    Layer * l = comp->layers;
+    for(unsigned i = 0; l; l = l->next) {
+        if(l->id == id) return i;
+        ++i;
+    }
+    return -1;
 }

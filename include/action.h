@@ -37,6 +37,7 @@ typedef struct Action {
     int   param_int[ACTION_MAX_INT_PARAMETERS];
     float param_float[ACTION_MAX_FLOAT_PARAMETERS];
     char  param_string[ACTION_MAX_STRING_PARAMETERS][ACTION_MAX_STRING_PARAMETER_LENGTH];
+    void *param_ptr;
 } Action;
 
 typedef struct History {
