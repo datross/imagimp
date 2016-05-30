@@ -16,7 +16,7 @@ typedef struct Session {
     Composition comp;
     History history;
     /* Widgets graphiques */
-    Button b_open, b_save, b_export_comp, b_export_hist, b_open_layer,
+    Button b_undo, b_redo, b_export_comp, b_export_hist, b_open_layer,
             b_norm_layer, b_effect_layer, b_del_layer, b_aff_lut, b_sep_lut,
             b_del_lut, b_l_up, b_l_down, b_l_mv_up, b_l_mv_down, b_lt_up,
             b_lt_down, b_lt_mv_up, b_lt_mv_down;

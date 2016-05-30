@@ -109,10 +109,21 @@ void Action_de_execute(Action action) {
 
 }
 
+void Action_clear(Action * a) {
+	if(a->type == REMOVE_LAYER) {
+		Layer_clear(a->param_ptr);
+	} else if(a->type == REMOVE_LUT) {
+		free(a->param_ptr);
+	}
+}
+
 void History_clear(History * history) {
-    
-    // TODO : désallouer toutes les actions proprement
-    
+    for(unsigned i = 0; i < history->s_undone; ++i) {
+		Action_clear(&(history->undone[i]));
+	}
+	for(unsigned i = 0; i < history->s_done; ++i) {
+		Action_clear(&(history->done[i]));
+	}
     free(history->done);
     free(history->undone);
 }

@@ -76,8 +76,6 @@ void Layer_move(Layer * layer, Layer ** list, bool begin) {
 }
 
 
-// À finir /////////////////////////////
-
 void Blend_effect(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
     below[0] = opacity * lut->v[4 * below[0]] + (1. - opacity) * below[0];
     below[1] = opacity * lut->v[4 * below[1] + 1] + (1. - opacity) * below[1];
@@ -86,10 +84,11 @@ void Blend_effect(const uint8_t * above, uint8_t * below, float opacity, Lut * l
 }
 
 void Blend_normal(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
-    below[0] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[0]] + (1. - (opacity *lut->v[4 * above[3] + 3]/255.)) * below[0];
-    below[1] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[1] + 1] + (1. - (opacity*lut->v[4 * above[3] + 3]/255.)) * below[1];
-    below[2] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[2] + 2] + (1. - (opacity*lut->v[4 * above[3] + 3]/255.)) * below[2];
-    below[3] = (opacity*lut->v[4 * above[3] + 3]/255.) * lut->v[4 * above[3] + 3] + (1. - (opacity*lut->v[4 * above[3] + 3]/255.)) * below[3];
+	float a = opacity*lut->v[4 * above[3] + 3]/255.;
+    below[0] = a * lut->v[4 * above[0]]     + (1. - a) * below[0];
+    below[1] = a * lut->v[4 * above[1] + 1] + (1. - a) * below[1];
+    below[2] = a * lut->v[4 * above[2] + 2] + (1. - a) * below[2];
+    below[3] = a * lut->v[4 * above[3] + 3] + (1. - a) * below[3];
 }
 
 void Blend_replace(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
@@ -100,20 +99,20 @@ void Blend_replace(const uint8_t * above, uint8_t * below, float opacity, Lut * 
 }
 
 void Blend_add(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
-    below[0] = min(255, opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[0]] + below[0]);
-    below[1] = min(255, opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[1] + 1] + below[1]);
-    below[2] = min(255, opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[2] + 2] + below[2]);
+	float a = opacity*lut->v[4 * above[3] + 3]/255.;
+    below[0] = min(255, a * lut->v[4 * above[0]] + below[0]);
+    below[1] = min(255, a * lut->v[4 * above[1] + 1] + below[1]);
+    below[2] = min(255, a * lut->v[4 * above[2] + 2] + below[2]);
     /* opacité non changée */
 }
 
 void Blend_product(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
-    below[0] = min(255, opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[0]] + below[0]);
-    below[1] = min(255, opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[1] + 1] + below[1]);
-    below[2] = min(255, opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[2] + 2] + below[2]);
-    below[2] = min(255, opacity*lut->v[4 * above[3] + 3] * lut->v[4 * above[2] + 2] + below[2]);
+	float a = opacity*lut->v[4 * above[3] + 3]/255.;
+    below[0] = a * lut->v[4 * above[0]] * below[0]    /255.  + (1. - a) * below[0];
+    below[1] = a * lut->v[4 * above[1] * 1] * below[1]/255. + (1. - a) * below[1];
+    below[2] = a * lut->v[4 * above[2] * 2] * below[2]/255. + (1. - a) * below[2];
+    /* opacité non changée */
 }
-////////////////////////////////////////
-
 
 void Layer_blend(const Layer * layer, uint8_t * below, unsigned w, unsigned h) {
     if(!layer->active)

@@ -7,8 +7,8 @@
 void Ihm_init() {
     
     /* Widgets graphiques */
-    session.b_open = Button_create(X_CONTROLS + 2, 5, 95, 18, "Open");
-    session.b_save = Button_create(X_CONTROLS + 102, 5, 95, 18, "Save");
+    session.b_undo = Button_create(X_CONTROLS + 2, 5, 95, 18, "  <<  Undo");
+    session.b_redo = Button_create(X_CONTROLS + 102, 5, 95, 18, "  Redo  >>");
     session.b_export_comp = Button_create(X_CONTROLS + 2, 28, 95, 18, "Export comp");
     session.b_export_hist = Button_create(X_CONTROLS + 102, 28, 95, 18, "Export hist");
     session.b_open_layer = Button_create(X_CONTROLS + 2, 51, 95, 18, "Open layer");
@@ -267,10 +267,10 @@ void Callback_mouse(int button, int state, int x, int y) {
     action.undoable = true;
         
     /* Test de tous les widgets */
-    if(Button_update(&(session.b_open), x, y, click)) {
-
-    } else if(Button_update(&(session.b_save), x, y, click)) {
-    
+    if(Button_update(&(session.b_undo), x, y, click)) {
+		History_undo(&(session.history));
+    } else if(Button_update(&(session.b_redo), x, y, click)) {
+		History_redo(&(session.history));
     } else if(Button_update(&(session.b_export_comp), x, y, click)) {
         if(session.comp.layers) {
             char const * name = tinyfd_saveFileDialog ("Export composition", "", 0, NULL, "image files") ;
@@ -530,8 +530,8 @@ void Callback_mouse(int button, int state, int x, int y) {
         Ihm_update_canvas();
 }
 void Callback_draw() {
-    Button_draw(&(session.b_open));
-    Button_draw(&(session.b_save));
+    Button_draw(&(session.b_undo));
+    Button_draw(&(session.b_redo));
     Button_draw(&(session.b_export_comp));
     Button_draw(&(session.b_export_hist));
     Button_draw(&(session.b_open_layer));

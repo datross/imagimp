@@ -22,11 +22,7 @@ typedef enum Action_type {
     CHANGE_LUT_VISIBILITY,
     CHANGE_LUT_POSITION,
     CHANGE_LUT_PARAMETER,
-    LOAD_COMPOSITION,
-    UNLOAD_COMPOSITION,
-    SAVE_COMPOSITION,
     EXPORT_COMPOSITION, /* IM_2 */
-    QUIT /* IHM_4 */
 } Action_type;
 
 typedef struct Action {

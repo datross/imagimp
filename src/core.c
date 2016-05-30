@@ -164,7 +164,6 @@ unsigned Composition_add_layer_from_file(Composition* comp, const char* name) {
     layer->blending = BLEND_NORMAL;
     layer->active = true;
     if(!strcmp(extension, ".ppm")) {
-        printf("oinfdf\n");
         layer->pixels = ppm_load(name, &w, &h);
     } else {
         layer->pixels = stbi_load(name, &w, &h, &n, 4);
@@ -181,7 +180,6 @@ unsigned Composition_add_layer_from_file(Composition* comp, const char* name) {
     } else if(comp->w != w || comp->h != h) {
         fprintf(stderr, "Image and composition resolution are different.\n");
         Layer_clear(layer);
-        free(layer);
         return -1;
     }
     layer->id = Composition_get_id(comp);
