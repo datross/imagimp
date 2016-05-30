@@ -109,8 +109,8 @@ void Blend_add(const uint8_t * above, uint8_t * below, float opacity, Lut * lut)
 void Blend_product(const uint8_t * above, uint8_t * below, float opacity, Lut * lut) {
 	float a = opacity*lut->v[4 * above[3] + 3]/255.;
     below[0] = a * lut->v[4 * above[0]] * below[0]    /255.  + (1. - a) * below[0];
-    below[1] = a * lut->v[4 * above[1] * 1] * below[1]/255. + (1. - a) * below[1];
-    below[2] = a * lut->v[4 * above[2] * 2] * below[2]/255. + (1. - a) * below[2];
+    below[1] = a * lut->v[4 * above[1] + 1] * below[1]/255. + (1. - a) * below[1];
+    below[2] = a * lut->v[4 * above[2] + 2] * below[2]/255. + (1. - a) * below[2];
     /* opacité non changée */
 }
 
