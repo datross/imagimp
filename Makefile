@@ -7,7 +7,7 @@ DIR_STB       = lib/stb
 DIR_BIN       = bin
 
 CC            = gcc
-CFLAGS        = -I$(DIR_INCLUDE) -I$(DIR_GLIMAGIMP)/include -I$(DIR_TINY) -I$(DIR_STB) -Wall -std=c99 -g
+CFLAGS        = -I$(DIR_INCLUDE) -I$(DIR_GLIMAGIMP)/include -I$(DIR_TINY) -I$(DIR_STB) -Wall -std=c99 -O2
 LDFLAGS       = -L$(DIR_GLIMAGIMP)/lib -Wl,-rpath,$(DIR_GLIMAGIMP)/lib -lglimagimp -lglut -lGL -lGLU  -lm
 
 SRC           = $(wildcard $(DIR_SRC)/*.c)

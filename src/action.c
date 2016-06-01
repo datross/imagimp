@@ -137,13 +137,13 @@ void History_do(History * history, Action action) {
 }
 
 void History_undo(History * history) {
-    Action action = Stack_remove(&(history->done), &(history->s_done));
+    /*Action action = Stack_remove(&(history->done), &(history->s_done));
     Action_de_execute(action);
-    Stack_add(&(history->undone), &(history->s_undone), action);
+    Stack_add(&(history->undone), &(history->s_undone), action);*/
 }
 
 void History_redo(History * history) {
-    Action action = Stack_remove(&(history->undone), &(history->s_undone));
+    /*Action action = Stack_remove(&(history->undone), &(history->s_undone));
     Action_execute(action);
-    Stack_add(&(history->done), &(history->s_done), action);
+    Stack_add(&(history->done), &(history->s_done), action);*/
 }

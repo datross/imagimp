@@ -26,7 +26,10 @@ uint8_t * ppm_load(const char * filename, int * w, int * h) {
     if(!file) return NULL;
     unsigned resolution;
     char version[3];
-    fscanf(file, "%3s\n%u %u\n%u\n", version, w, h, &resolution);
+    if(fscanf(file, "%3s\n%u %u\n%u\n", version, w, h, &resolution) != 4) {
+        fprintf(stderr, "Can't read PPM file, header not recognized.\n");
+        return NULL;
+    }
     if(resolution != 255 || strcmp(version, "P6")) return NULL;
     uint8_t * pixels = malloc(4 * (*w) * (*h) * sizeof(uint8_t));
     if(!pixels) return NULL;
